@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Данные клиентов</title>
+    <style>
+        body {
+            background: #f4f4f4;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .client-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 8px;
+            padding: 12px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            font-size: 14px;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .client-card.selected {
+            background: #e0e0e0;
+        }
+
+        .client-card::after {
+            content: "✓";
+            font-size: 24px;
+            color: #007bff;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .client-card.selected::after {
+            opacity: 1;
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Данные клиентов</h1>
+    <div id="clients"></div>
+    <button class="button" onclick="window.location.href='index.html'">+ Добавить ещё</button>
+    <button class="button" id="deleteSelected" style="display:none;">Удалить выбранные</button>
+
+    <script>
+        // Получение данных из LocalStorage
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+
+        // Функция для отображения данных
+        const displayClients = () => {
+            const clientsContainer = document.getElementById('clients');
+            clientsContainer.innerHTML = '';
+            clients.forEach((client, index) => {
+                const clientCard = document.createElement('div');
+                clientCard.className = 'client-card';
+                clientCard.dataset.index = index;
+                clientCard.innerHTML = `
+                    <p><strong>ФИО:</strong> ${client.fio}</p>
+                    <p><strong>Возраст:</strong> ${client.age}</p>
+                    <p><strong>Место жительства:</strong> ${client.address}</p>
+                    <p><strong>Дата:</strong> ${client.date}</p>
+                `;
+                clientCard.onclick = function() {
+                    this.classList.toggle('selected');
+                    updateDeleteButton();
+                };
+                clientsContainer.appendChild(clientCard);
+            });
+        };
+
+        // Функция для обновления кнопки удаления
+        const updateDeleteButton = () => {
+            const selectedCards = document.querySelectorAll('.client-card.selected');
+            const deleteButton = document.getElementById('deleteSelected');
+            if (selectedCards.length > 0) {
+                deleteButton.style.display = 'block';
+            } else {
+                deleteButton.style.display = 'none';
+            }
+        };
+
+        // Функция для удаления выбранных данных
+        document.getElementById('deleteSelected').onclick = function() {
+            const selectedIndices = Array.from(document.querySelectorAll('.client-card.selected'))
+                .map(card => parseInt(card.dataset.index))
+                .sort((a, b) => b - a);
+
+            selectedIndices.forEach(index => {
+                clients.splice(index, 1);
+            });
+
+            localStorage.setItem('clients', JSON.stringify(clients));
+            displayClients();
+            updateDeleteButton();
+        };
+
+        // Инициализация страницы
+        displayClients();
+    </script>
+</body>
+</html>
